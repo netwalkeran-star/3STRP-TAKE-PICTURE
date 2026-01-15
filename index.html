@@ -4,24 +4,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoseGen AI</title>
+    <title>PoseGen AI | Pro Pose Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
 <script type="importmap">
 {
   "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.36.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@0.462.0",
+    "@google/genai": "https://esm.sh/@google/genai@1.36.0",
+    "react-dom/": "https://esm.sh/react-dom@19.2.3/",
+    "react/": "https://esm.sh/react@19.2.3/",
+    "react": "https://esm.sh/react@19.2.3",
     "three": "https://esm.sh/three@0.173.0",
     "three/examples/jsm/controls/OrbitControls": "https://esm.sh/three@0.173.0/examples/jsm/controls/OrbitControls.js",
     "three/": "https://esm.sh/three@^0.182.0/"
   }
 }
 </script>
+<style>
+  body { background-color: black; margin: 0; }
+  #loading-fallback {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #555; font-family: sans-serif; font-size: 12px; letter-spacing: 2px;
+  }
+</style>
 </head>
 <body class="bg-black text-white antialiased overflow-hidden">
-    <div id="root"></div>
+    <!-- 如果 JS 載入失敗，使用者會看到這個提示而不是純黑屏 -->
+    <div id="root">
+      <div id="loading-fallback">INITIALIZING ENGINE...</div>
+    </div>
+    
+    <!-- 核心修正：明確引入 index.tsx 作為模組 -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>

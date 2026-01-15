@@ -26,7 +26,6 @@ const MannequinPose: React.FC<MannequinPoseProps> = ({ pose, onChange }) => {
   const isDraggingRef = useRef(false);
   const previousMousePosition = useRef({ x: 0, y: 0 });
 
-  // 專業體塊材質
   const blockMaterial = useMemo(() => new THREE.MeshStandardMaterial({ 
     color: 0x00d9ff, 
     transparent: true, 
@@ -64,7 +63,7 @@ const MannequinPose: React.FC<MannequinPoseProps> = ({ pose, onChange }) => {
     camera.position.set(0, 1.4, 3.5);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     containerRef.current.appendChild(renderer.domElement);
