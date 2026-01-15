@@ -13,19 +13,31 @@ const HandDrawnPose: React.FC<HandDrawnPoseProps> = ({ pose, onChange }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
 
+  const fillBackground = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, width, height);
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    // 設定畫布大小為容器大小
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
       if (parent) {
+        // 先保存現有內容
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        if (tempCtx) tempCtx.drawImage(canvas, 0, 0);
+
         canvas.width = parent.clientWidth;
         canvas.height = parent.clientHeight;
-        // 背景填黑
         const ctx = canvas.getContext('2d');
         if (ctx) {
+          fillBackground(ctx, canvas.width, canvas.height);
+          ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           ctx.strokeStyle = '#00f2ff'; // 螢光藍筆觸
@@ -56,7 +68,6 @@ const HandDrawnPose: React.FC<HandDrawnPoseProps> = ({ pose, onChange }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // 儲存歷史記錄以便撤銷
     setHistory(prev => [...prev, canvas.toDataURL()]);
 
     const pos = getPointerPos(e);
@@ -87,7 +98,7 @@ const HandDrawnPose: React.FC<HandDrawnPoseProps> = ({ pose, onChange }) => {
   const saveToState = () => {
     const canvas = canvasRef.current;
     if (canvas) {
-      onChange({ ...pose, drawingImage: canvas.toDataURL('image/png') });
+      onChange({ ...pose, drawingImage: canvas.toDataURL('image/jpeg', 0.8) });
     }
   };
 
@@ -96,7 +107,7 @@ const HandDrawnPose: React.FC<HandDrawnPoseProps> = ({ pose, onChange }) => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      fillBackground(ctx, canvas.width, canvas.height);
       saveToState();
       setHistory([]);
     }
@@ -112,7 +123,7 @@ const HandDrawnPose: React.FC<HandDrawnPoseProps> = ({ pose, onChange }) => {
     const lastState = history[history.length - 1];
     const img = new Image();
     img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      fillBackground(ctx, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
       setHistory(prev => prev.slice(0, -1));
       saveToState();
@@ -122,13 +133,12 @@ const HandDrawnPose: React.FC<HandDrawnPoseProps> = ({ pose, onChange }) => {
 
   return (
     <div className="relative flex-1 flex flex-col bg-zinc-950 overflow-hidden">
-      <div className="absolute top-6 left-6 z-10 space-y-2">
+      <div className="absolute top-6 left-6 z-10 space-y-2 pointer-events-none">
         <h3 className="text-white font-black text-lg italic tracking-tighter">DRAW POSE</h3>
         <p className="text-[10px] text-cyan-500 font-bold uppercase tracking-widest">Sketch the skeleton for AI</p>
       </div>
 
       <div className="flex-1 relative touch-none cursor-crosshair">
-        {/* 參考引導線 */}
         {!pose.drawingImage && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
             <div className="w-20 h-20 border-2 border-white rounded-full mb-40" />
@@ -141,7 +151,7 @@ const HandDrawnPose: React.FC<HandDrawnPoseProps> = ({ pose, onChange }) => {
           onPointerMove={draw}
           onPointerUp={stopDrawing}
           onPointerLeave={stopDrawing}
-          className="w-full h-full"
+          className="w-full h-full block"
         />
       </div>
 
