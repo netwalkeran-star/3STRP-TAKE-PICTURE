@@ -8,9 +8,8 @@ export enum Step {
 }
 
 export interface PoseData {
-  rotation: { x: number; y: number; z: number };
-  perspective: number;
-  bones: { [key: string]: { x: number; y: number; z: number } };
+  drawingImage: string | null; // 現在儲存手繪的 Base64 圖片
+  brushSize: number;
 }
 
 export interface AppState {

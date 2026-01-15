@@ -1,23 +1,22 @@
 
 import React, { useState } from 'react';
-import { Camera, Layers, Image as ImageIcon, Sparkles, ArrowRight, ArrowLeft, Loader2, Wand2, CheckCircle, RefreshCw } from 'lucide-react';
-import { Step, AppState, PoseData } from './types';
-import CameraView from './components/CameraView';
-import MannequinPose from './components/MannequinPose';
-import { generateAIPoseImage } from './services/geminiService';
+import { Camera, Layers, Image as ImageIcon, Sparkles, ArrowRight, ArrowLeft, Loader2, Wand2, CheckCircle, RefreshCw, PenTool } from 'lucide-react';
+import { Step, AppState } from './types.ts';
+import CameraView from './components/CameraView.tsx';
+import HandDrawnPose from './components/MannequinPose.tsx'; // 雖然檔名沒改，但內容已更新為手繪
+import { generateAIPoseImage } from './services/geminiService.ts';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
     step: Step.SubjectCapture,
     subjectImage: null,
-    subjectStyle: 'A futuristic fashion icon, cyberpunk aesthetic, high-detail materials',
+    subjectStyle: 'A futuristic fashion icon, cyberpunk aesthetic, detailed high-end couture',
     pose: {
-      rotation: { x: 0, y: 0, z: 0 },
-      perspective: 50,
-      bones: {}
+      drawingImage: null,
+      brushSize: 8
     },
     sceneImage: null,
-    atmosphere: 'Modern minimalist studio, harsh cinematic lighting, teal and orange highlights',
+    atmosphere: 'Modern minimalist studio, harsh cinematic lighting, teal highlights',
     resultImage: null
   });
 
@@ -42,7 +41,7 @@ const App: React.FC = () => {
   const renderHeader = () => {
     const steps = [
       { id: 1, label: 'Hero', icon: Camera },
-      { id: 2, label: 'Pose', icon: Layers },
+      { id: 2, label: 'Action', icon: PenTool },
       { id: 3, label: 'World', icon: ImageIcon }
     ];
 
@@ -63,7 +62,7 @@ const App: React.FC = () => {
         </div>
         <div className="flex flex-col items-end">
           <h1 className="text-xl font-black italic tracking-tighter text-white leading-none">POSEGEN</h1>
-          <p className="text-[8px] text-cyan-500 uppercase font-black tracking-[0.3em] mt-1.5">v3.0 PRO</p>
+          <p className="text-[8px] text-cyan-500 uppercase font-black tracking-[0.3em] mt-1.5">v4.0 SKETCH</p>
         </div>
       </div>
     );
@@ -98,8 +97,8 @@ const App: React.FC = () => {
             <div className="flex-1 flex flex-col overflow-hidden">
               {!state.subjectImage ? (
                 <CameraView 
-                  title="Capture Protagonist" 
-                  placeholderText="The person you want to re-pose"
+                  title="Protagonist Identity" 
+                  placeholderText="Capture the person to transform"
                   onCapture={(img) => setState(prev => ({ ...prev, subjectImage: img }))}
                 />
               ) : renderCaptureSummary(state.subjectImage, () => setState(prev => ({ ...prev, subjectImage: null })))}
@@ -108,19 +107,18 @@ const App: React.FC = () => {
             {state.subjectImage && (
               <div className="p-8 bg-zinc-950 border-t border-white/5 flex flex-col gap-6 animate-in slide-in-from-bottom-8 shrink-0">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Modified Style (Optional)</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Protagonist Style</label>
                   <textarea 
                     value={state.subjectStyle}
                     onChange={(e) => setState(prev => ({ ...prev, subjectStyle: e.target.value }))}
                     className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl p-4 text-sm focus:ring-1 focus:ring-cyan-500 outline-none h-20 resize-none transition-all font-medium"
-                    placeholder="E.g. Wearing a space suit..."
                   />
                 </div>
                 <button 
                   onClick={nextStep}
                   className="w-full py-5 bg-white text-black font-black rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-2xl"
                 >
-                  NEXT: ADAPT POSE <ArrowRight size={20} />
+                  NEXT: SKETCH POSE <ArrowRight size={20} />
                 </button>
               </div>
             )}
@@ -129,22 +127,23 @@ const App: React.FC = () => {
 
         {state.step === Step.PoseAdjustment && (
           <div className="flex-1 flex flex-col overflow-hidden">
-            <MannequinPose 
+            <HandDrawnPose 
               pose={state.pose} 
               onChange={(pose) => setState(prev => ({ ...prev, pose }))} 
             />
             <div className="p-8 bg-zinc-950 border-t border-white/5 flex gap-4 shrink-0">
               <button 
                 onClick={prevStep}
-                className="w-20 h-20 bg-zinc-900/50 rounded-2xl flex items-center justify-center border border-white/5 active:bg-zinc-800 transition-colors"
+                className="w-20 h-20 bg-zinc-900/50 rounded-2xl flex items-center justify-center border border-white/5"
               >
                 <ArrowLeft size={24} />
               </button>
               <button 
                 onClick={nextStep}
-                className="flex-1 h-20 bg-cyan-600 text-white font-black rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
+                disabled={!state.pose.drawingImage}
+                className={`flex-1 h-20 font-black rounded-2xl flex items-center justify-center gap-3 shadow-lg transition-all ${state.pose.drawingImage ? 'bg-cyan-600 text-white active:scale-95' : 'bg-zinc-800 text-zinc-600'}`}
               >
-                SET ENVIRONMENT <ArrowRight size={20} />
+                CONFIRM ACTION <ArrowRight size={20} />
               </button>
             </div>
           </div>
@@ -155,8 +154,8 @@ const App: React.FC = () => {
             <div className="flex-1 flex flex-col overflow-hidden">
               {!state.sceneImage ? (
                 <CameraView 
-                  title="World Context" 
-                  placeholderText="Capture an environment or background"
+                  title="World Atmosphere" 
+                  placeholderText="Capture your environment"
                   onCapture={(img) => setState(prev => ({ ...prev, sceneImage: img }))}
                 />
               ) : renderCaptureSummary(state.sceneImage, () => setState(prev => ({ ...prev, sceneImage: null })))}
@@ -165,12 +164,11 @@ const App: React.FC = () => {
             {state.sceneImage && (
               <div className="p-8 bg-zinc-950 border-t border-white/5 flex flex-col gap-6 animate-in slide-in-from-bottom-8 shrink-0">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Scene Atmosphere</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Atmosphere Keywords</label>
                   <textarea 
                     value={state.atmosphere}
                     onChange={(e) => setState(prev => ({ ...prev, atmosphere: e.target.value }))}
                     className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl p-4 text-sm focus:ring-1 focus:ring-cyan-500 outline-none h-20 resize-none transition-all font-medium"
-                    placeholder="E.g. Rainy neon street..."
                   />
                 </div>
                 <div className="flex gap-4">
@@ -184,7 +182,7 @@ const App: React.FC = () => {
                     onClick={handleGenerate}
                     className="flex-1 h-20 bg-white text-black font-black rounded-2xl flex items-center justify-center gap-3 shadow-2xl active:scale-95 transition-all"
                   >
-                    <Sparkles size={20} /> GENERATE ART
+                    <Sparkles size={20} /> SYNTHESIZE
                   </button>
                 </div>
               </div>
@@ -193,19 +191,16 @@ const App: React.FC = () => {
         )}
 
         {state.step === Step.Generating && (
-          <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-12">
+          <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-12 bg-black">
             <div className="relative">
-              <div className="absolute inset-0 bg-cyan-500 blur-[120px] opacity-20 animate-pulse"></div>
+              <div className="absolute inset-0 bg-cyan-500 blur-[120px] opacity-30 animate-pulse"></div>
               <div className="w-48 h-48 border-[12px] border-zinc-900 border-t-cyan-500 rounded-full animate-spin flex items-center justify-center shadow-2xl">
                 <Wand2 className="text-cyan-400" size={56} />
               </div>
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-3xl font-black italic tracking-tighter">SYNTHESIZING</h2>
-              <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em]">Processing 3D Geometry & Light</p>
-            </div>
-            <div className="w-full max-w-xs bg-zinc-900 h-1.5 rounded-full overflow-hidden">
-              <div className="h-full bg-cyan-500 animate-[loading_2s_infinite_ease-in-out]" style={{ width: '40%' }}></div>
+              <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em]">Merging Sketched Pose & Reality</p>
             </div>
           </div>
         )}
@@ -214,53 +209,20 @@ const App: React.FC = () => {
           <div className="flex-1 flex flex-col p-6 space-y-8 overflow-y-auto">
             <div className="aspect-[4/5] rounded-[3rem] overflow-hidden bg-zinc-950 shadow-2xl border border-white/5 relative shrink-0">
               {state.resultImage ? (
-                <img src={state.resultImage} alt="Generated Art" className="w-full h-full object-contain bg-black" />
+                <img src={state.resultImage} alt="Result" className="w-full h-full object-contain bg-black" />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center p-10 text-center">
-                  <Loader2 className="animate-spin text-zinc-800 mb-6" size={56} />
-                  <p className="text-zinc-600 font-black uppercase tracking-[0.2em] text-[10px]">Render Pipeline Failed</p>
-                </div>
+                <div className="w-full h-full flex items-center justify-center text-zinc-800">Render Failed</div>
               )}
             </div>
-            
-            <div className="space-y-6 shrink-0 pb-10">
-              <div className="p-8 bg-cyan-950/20 border border-cyan-500/20 rounded-[2.5rem] relative overflow-hidden">
-                 <div className="absolute top-0 right-0 p-4 opacity-10">
-                   <Sparkles size={60} />
-                 </div>
-                 <div className="flex items-center gap-3 text-cyan-400 mb-3">
-                   <CheckCircle size={16} />
-                   <span className="text-[10px] font-black uppercase tracking-[0.2em]">Masterpiece Ready</span>
-                 </div>
-                 <p className="text-xs text-zinc-400 leading-relaxed font-medium">Identity preserved. Pose geometry locked. Scene atmosphere merged. Your AI creation is ready for display.</p>
-              </div>
-
-              <button 
-                onClick={() => setState({
-                  step: Step.SubjectCapture,
-                  subjectImage: null,
-                  subjectStyle: 'A futuristic fashion icon, cyberpunk aesthetic',
-                  pose: { rotation: { x: 0, y: 0, z: 0 }, perspective: 50, bones: {} },
-                  sceneImage: null,
-                  atmosphere: 'Modern minimalist studio, harsh cinematic lighting',
-                  resultImage: null
-                })}
-                className="w-full h-20 bg-white text-black font-black rounded-3xl flex items-center justify-center gap-3 text-lg hover:bg-zinc-200 transition-all shadow-2xl active:scale-95"
-              >
-                START NEW SESSION
-              </button>
-            </div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full h-20 bg-white text-black font-black rounded-3xl flex items-center justify-center gap-3 text-lg"
+            >
+              NEW MASTERPIECE
+            </button>
           </div>
         )}
       </main>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes loading {
-          0% { transform: translateX(-100%); width: 30%; }
-          50% { width: 60%; }
-          100% { transform: translateX(300%); width: 30%; }
-        }
-      `}} />
     </div>
   );
 };

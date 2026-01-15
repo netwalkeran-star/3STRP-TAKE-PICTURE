@@ -4,21 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoseGen AI | Pro Pose Generator</title>
+    <title>PoseGen AI | Pro Sketch Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
 <script type="importmap">
 {
   "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@0.462.0",
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.462.0?external=react",
     "@google/genai": "https://esm.sh/@google/genai@1.36.0",
-    "react-dom/": "https://esm.sh/react-dom@19.2.3/",
-    "react/": "https://esm.sh/react@19.2.3/",
-    "react": "https://esm.sh/react@19.2.3",
-    "three": "https://esm.sh/three@0.173.0",
-    "three/examples/jsm/controls/OrbitControls": "https://esm.sh/three@0.173.0/examples/jsm/controls/OrbitControls.js",
-    "three/": "https://esm.sh/three@0.173.0/"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
+</script>
+<script>
+  window.process = { env: { API_KEY: "" } };
+  window.onerror = function(msg) {
+    const fallback = document.getElementById('loading-fallback');
+    if (fallback) fallback.innerHTML = `<div class="text-red-500 font-mono text-[10px]">${msg}</div>`;
+    return false;
+  };
 </script>
 <style>
   body { background-color: #000; margin: 0; }
@@ -29,16 +36,6 @@
     background: radial-gradient(circle at center, #0a1a20 0%, #000 100%);
     z-index: 9999;
   }
-  .loading-dots::after {
-    content: '.';
-    animation: dots 1.5s steps(5, end) infinite;
-  }
-  @keyframes dots {
-    0%, 20% { content: '.'; }
-    40% { content: '..'; }
-    60% { content: '...'; }
-    80%, 100% { content: ''; }
-  }
 </style>
 </head>
 <body class="bg-black text-white antialiased overflow-hidden">
@@ -46,12 +43,10 @@
       <div id="loading-fallback">
         <div class="flex flex-col items-center gap-4">
           <div class="w-12 h-12 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
-          <div class="loading-dots">Initializing PoseGen Engine</div>
+          <div class="tracking-widest animate-pulse">BOOTING ENGINE</div>
         </div>
       </div>
     </div>
-    
-    <!-- 使用相對路徑以確保在 GitHub Pages 子路徑也能正確讀取 -->
     <script type="module" src="./index.tsx"></script>
 </body>
 </html>
