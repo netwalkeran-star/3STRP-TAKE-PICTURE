@@ -16,25 +16,42 @@
     "react": "https://esm.sh/react@19.2.3",
     "three": "https://esm.sh/three@0.173.0",
     "three/examples/jsm/controls/OrbitControls": "https://esm.sh/three@0.173.0/examples/jsm/controls/OrbitControls.js",
-    "three/": "https://esm.sh/three@^0.182.0/"
+    "three/": "https://esm.sh/three@0.173.0/"
   }
 }
 </script>
 <style>
-  body { background-color: black; margin: 0; }
+  body { background-color: #000; margin: 0; }
   #loading-fallback {
     position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-    color: #555; font-family: sans-serif; font-size: 12px; letter-spacing: 2px;
+    color: #00d9ff; font-family: 'Courier New', monospace; font-size: 14px; 
+    letter-spacing: 4px; text-transform: uppercase;
+    background: radial-gradient(circle at center, #0a1a20 0%, #000 100%);
+    z-index: 9999;
+  }
+  .loading-dots::after {
+    content: '.';
+    animation: dots 1.5s steps(5, end) infinite;
+  }
+  @keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60% { content: '...'; }
+    80%, 100% { content: ''; }
   }
 </style>
 </head>
 <body class="bg-black text-white antialiased overflow-hidden">
-    <!-- 如果 JS 載入失敗，使用者會看到這個提示而不是純黑屏 -->
     <div id="root">
-      <div id="loading-fallback">INITIALIZING ENGINE...</div>
+      <div id="loading-fallback">
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-12 h-12 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
+          <div class="loading-dots">Initializing PoseGen Engine</div>
+        </div>
+      </div>
     </div>
     
-    <!-- 核心修正：明確引入 index.tsx 作為模組 -->
+    <!-- 使用相對路徑以確保在 GitHub Pages 子路徑也能正確讀取 -->
     <script type="module" src="./index.tsx"></script>
 </body>
 </html>
