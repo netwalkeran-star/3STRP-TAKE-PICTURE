@@ -1,0 +1,7 @@
+{
+  "name": "PoseGen AI",
+  "description": "A 3-step AI image generator that combines real-world captures with 3D pose control to create stunning artistic photos.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
